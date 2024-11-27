@@ -21,6 +21,7 @@ CREATE TABLE User (
 );
 
 CREATE INDEX idx_user_id ON User(user_id);
+CREATE INDEX idx_email ON User(email);
 ```
 
 ### 2. **Property Table**
@@ -60,6 +61,7 @@ CREATE TABLE Booking (
 );
 
 CREATE INDEX idx_booking_id ON Booking(booking_id);
+CREATE INDEX idx_property_id_on_booking ON Booking(property_id);
 ```
 
 ### 4. **Payment Table**
@@ -76,6 +78,7 @@ CREATE TABLE Payment (
 );
 
 CREATE INDEX idx_payment_id ON Payment(payment_id);
+CREATE INDEX idx_booking_id_on_payment ON Payment(booking_id);
 ```
 
 ### 5. **Review Table**
@@ -132,7 +135,7 @@ CREATE INDEX idx_message_id ON Message(message_id);
     - `CHECK` constraints on the `rating` column in the `Review` table to ensure values are between 1 and 5.
     - `ENUM` types for user roles, payment methods, and booking status to ensure valid values are used.
 
-5. **Indexes**: Indexes are created on primary keys and other important columns (such as `user_id`, `property_id`, and `booking_id`) to improve query performance, especially for join operations.
+5. **Indexes**: Indexes are created on primary keys and other important columns (such as `user_id`, `email`, `property_id`, `payment_id`, and `booking_id`) to improve query performance, especially for join operations.
 
 ---
 
