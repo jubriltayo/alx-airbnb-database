@@ -120,8 +120,8 @@ The `Message` table handles communication between users, such as hosts and guest
 ```dbml
 Table Message {
   message_id uuid [primary key]
-  sender_id uuid [ref: <> User.user_id]
-  recipient_id uuid [ref: <> User.user_id]
+  sender_id uuid [ref: > User.user_id]
+  recipient_id uuid [ref: > User.user_id]
   message_body text [not null]
   sent_at timestamp [default: `CURRENT_TIMESTAMP`]
 
