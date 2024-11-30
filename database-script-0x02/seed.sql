@@ -1,42 +1,66 @@
+-- Enable pgcrypto extension for UUID generation
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 -- Insert sample Users
-INSERT INTO User (user_id, first_name, last_name, email, password_hash, phone_number, role, created_at)
+INSERT INTO "User" (user_id, first_name, last_name, email, password_hash, phone_number, role, created_at)
 VALUES 
-  (UUID(), 'John', 'Doe', 'john.doe@example.com', 'hashed_password_1', '123-456-7890', 'host', CURRENT_TIMESTAMP),
-  (UUID(), 'Jane', 'Smith', 'jane.smith@example.com', 'hashed_password_2', '987-654-3210', 'guest', CURRENT_TIMESTAMP),
-  (UUID(), 'Alice', 'Johnson', 'alice.johnson@example.com', 'hashed_password_3', '555-111-2222', 'guest', CURRENT_TIMESTAMP),
-  (UUID(), 'Bob', 'Williams', 'bob.williams@example.com', 'hashed_password_4', NULL, 'admin', CURRENT_TIMESTAMP);
+  (gen_random_uuid(), 'John', 'Doe', 'john.doe@example.com', 'hashed_password_1', '123-456-7890', 'host', CURRENT_TIMESTAMP),
+  (gen_random_uuid(), 'Jane', 'Smith', 'jane.smith@example.com', 'hashed_password_2', '987-654-3210', 'guest', CURRENT_TIMESTAMP),
+  (gen_random_uuid(), 'Alice', 'Johnson', 'alice.johnson@example.com', 'hashed_password_3', '555-111-2222', 'guest', CURRENT_TIMESTAMP),
+  (gen_random_uuid(), 'Bob', 'Williams', 'bob.williams@example.com', 'hashed_password_4', NULL, 'admin', CURRENT_TIMESTAMP);
 
 -- Insert sample Properties
-INSERT INTO Property (property_id, host_id, name, description, location, pricepernight, created_at, updated_at)
-VALUES 
-  (UUID(), (SELECT user_id FROM User WHERE email = 'john.doe@example.com'), 'Cozy Apartment', 'A small cozy apartment in downtown', 'New York, NY', 100.00, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-  (UUID(), (SELECT user_id FROM User WHERE email = 'john.doe@example.com'), 'Beach House', 'A beautiful house by the beach', 'Miami, FL', 250.00, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-  (UUID(), (SELECT user_id FROM User WHERE email = 'jane.smith@example.com'), 'Mountain Retreat', 'A secluded cabin in the mountains', 'Aspen, CO', 150.00, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO "Property" (property_id, host_id, name, description, location, pricepernight, created_at, updated_at)
+SELECT gen_random_uuid(), u.user_id, 'Cozy Apartment', 'A small cozy apartment in downtown', 'New York, NY', 100.00::NUMERIC, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+FROM "User" u WHERE u.email = 'john.doe@example.com'
+UNION ALL
+SELECT gen_random_uuid(), u.user_id, 'Beach House', 'A beautiful house by the beach', 'Miami, FL', 250.00::NUMERIC, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+FROM "User" u WHERE u.email = 'john.doe@example.com'
+UNION ALL
+SELECT gen_random_uuid(), u.user_id, 'Mountain Retreat', 'A secluded cabin in the mountains', 'Aspen, CO', 150.00::NUMERIC, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+FROM "User" u WHERE u.email = 'jane.smith@example.com';
+
 
 -- Insert sample Bookings
-INSERT INTO Booking (booking_id, property_id, user_id, start_date, end_date, total_price, status, created_at)
-VALUES
-  (UUID(), (SELECT property_id FROM Property WHERE name = 'Cozy Apartment'), (SELECT user_id FROM User WHERE email = 'alice.johnson@example.com'), '2024-12-01', '2024-12-05', 500.00, 'confirmed', CURRENT_TIMESTAMP),
-  (UUID(), (SELECT property_id FROM Property WHERE name = 'Beach House'), (SELECT user_id FROM User WHERE email = 'bob.williams@example.com'), '2024-12-15', '2024-12-20', 1250.00, 'pending', CURRENT_TIMESTAMP),
-  (UUID(), (SELECT property_id FROM Property WHERE name = 'Mountain Retreat'), (SELECT user_id FROM User WHERE email = 'jane.smith@example.com'), '2024-12-10', '2024-12-12', 450.00, 'confirmed', CURRENT_TIMESTAMP);
+INSERT INTO "Booking" (booking_id, property_id, user_id, start_date, end_date, total_price, status, created_at)
+SELECT gen_random_uuid(), p.property_id, u.user_id, '2024-12-01'::DATE, '2024-12-05'::DATE, 500.00::NUMERIC, 'confirmed', CURRENT_TIMESTAMP
+FROM "Property" p JOIN "User" u ON p.name = 'Cozy Apartment' AND u.email = 'alice.johnson@example.com'
+UNION ALL
+SELECT gen_random_uuid(), p.property_id, u.user_id, '2024-12-15'::DATE, '2024-12-20'::DATE, 1250.00::NUMERIC, 'pending', CURRENT_TIMESTAMP
+FROM "Property" p JOIN "User" u ON p.name = 'Beach House' AND u.email = 'bob.williams@example.com'
+UNION ALL
+SELECT gen_random_uuid(), p.property_id, u.user_id, '2024-12-10'::DATE, '2024-12-12'::DATE, 450.00::NUMERIC, 'confirmed', CURRENT_TIMESTAMP
+FROM "Property" p JOIN "User" u ON p.name = 'Mountain Retreat' AND u.email = 'jane.smith@example.com';
 
 -- Insert sample Payments
-INSERT INTO Payment (payment_id, booking_id, amount, payment_date, payment_method)
-VALUES
-  (UUID(), (SELECT booking_id FROM Booking WHERE property_id = (SELECT property_id FROM Property WHERE name = 'Cozy Apartment')), 500.00, CURRENT_TIMESTAMP, 'credit_card'),
-  (UUID(), (SELECT booking_id FROM Booking WHERE property_id = (SELECT property_id FROM Property WHERE name = 'Beach House')), 1250.00, CURRENT_TIMESTAMP, 'paypal'),
-  (UUID(), (SELECT booking_id FROM Booking WHERE property_id = (SELECT property_id FROM Property WHERE name = 'Mountain Retreat')), 450.00, CURRENT_TIMESTAMP, 'stripe');
+INSERT INTO "Payment" (payment_id, booking_id, amount, payment_date, payment_method)
+SELECT gen_random_uuid(), b.booking_id, 500.00::NUMERIC, CURRENT_TIMESTAMP, 'credit_card'
+FROM "Booking" b JOIN "Property" p ON b.property_id = p.property_id WHERE p.name = 'Cozy Apartment'
+UNION ALL
+SELECT gen_random_uuid(), b.booking_id, 1250.00::NUMERIC, CURRENT_TIMESTAMP, 'paypal'
+FROM "Booking" b JOIN "Property" p ON b.property_id = p.property_id WHERE p.name = 'Beach House'
+UNION ALL
+SELECT gen_random_uuid(), b.booking_id, 450.00::NUMERIC, CURRENT_TIMESTAMP, 'stripe'
+FROM "Booking" b JOIN "Property" p ON b.property_id = p.property_id WHERE p.name = 'Mountain Retreat';
 
 -- Insert sample Reviews
-INSERT INTO Review (review_id, property_id, user_id, rating, comment, created_at)
-VALUES
-  (UUID(), (SELECT property_id FROM Property WHERE name = 'Cozy Apartment'), (SELECT user_id FROM User WHERE email = 'alice.johnson@example.com'), 4, 'Great place! Very cozy and well-located.', CURRENT_TIMESTAMP),
-  (UUID(), (SELECT property_id FROM Property WHERE name = 'Beach House'), (SELECT user_id FROM User WHERE email = 'bob.williams@example.com'), 5, 'The beach house was amazing. Highly recommend!', CURRENT_TIMESTAMP),
-  (UUID(), (SELECT property_id FROM Property WHERE name = 'Mountain Retreat'), (SELECT user_id FROM User WHERE email = 'jane.smith@example.com'), 3, 'Nice cabin, but it was a bit far from town.', CURRENT_TIMESTAMP);
+INSERT INTO "Review" (review_id, property_id, user_id, rating, comment, created_at)
+SELECT gen_random_uuid(), p.property_id, u.user_id, 4, 'Great place! Very cozy and well-located.', CURRENT_TIMESTAMP
+FROM "Property" p JOIN "User" u ON p.name = 'Cozy Apartment' AND u.email = 'alice.johnson@example.com'
+UNION ALL
+SELECT gen_random_uuid(), p.property_id, u.user_id, 5, 'The beach house was amazing. Highly recommend!', CURRENT_TIMESTAMP
+FROM "Property" p JOIN "User" u ON p.name = 'Beach House' AND u.email = 'bob.williams@example.com'
+UNION ALL
+SELECT gen_random_uuid(), p.property_id, u.user_id, 3, 'Nice cabin, but it was a bit far from town.', CURRENT_TIMESTAMP
+FROM "Property" p JOIN "User" u ON p.name = 'Mountain Retreat' AND u.email = 'jane.smith@example.com';
 
 -- Insert sample Messages
-INSERT INTO Message (message_id, sender_id, recipient_id, message_body, sent_at)
-VALUES
-  (UUID(), (SELECT user_id FROM User WHERE email = 'alice.johnson@example.com'), (SELECT user_id FROM User WHERE email = 'john.doe@example.com'), 'Hi, I would like to book your apartment for a few days in December.', CURRENT_TIMESTAMP),
-  (UUID(), (SELECT user_id FROM User WHERE email = 'bob.williams@example.com'), (SELECT user_id FROM User WHERE email = 'john.doe@example.com'), 'Is the beach house still available for booking?', CURRENT_TIMESTAMP),
-  (UUID(), (SELECT user_id FROM User WHERE email = 'jane.smith@example.com'), (SELECT user_id FROM User WHERE email = 'john.doe@example.com'), 'Can you confirm if the mountain retreat has heating?', CURRENT_TIMESTAMP);
+INSERT INTO "Message" (message_id, sender_id, recipient_id, message_body, sent_at)
+SELECT gen_random_uuid(), s.user_id, r.user_id, 'Hi, I would like to book your apartment for a few days in December.', CURRENT_TIMESTAMP
+FROM "User" s JOIN "User" r ON s.email = 'alice.johnson@example.com' AND r.email = 'john.doe@example.com'
+UNION ALL
+SELECT gen_random_uuid(), s.user_id, r.user_id, 'Is the beach house still available for booking?', CURRENT_TIMESTAMP
+FROM "User" s JOIN "User" r ON s.email = 'bob.williams@example.com' AND r.email = 'john.doe@example.com'
+UNION ALL
+SELECT gen_random_uuid(), s.user_id, r.user_id, 'Can you confirm if the mountain retreat has heating?', CURRENT_TIMESTAMP
+FROM "User" s JOIN "User" r ON s.email = 'jane.smith@example.com' AND r.email = 'john.doe@example.com';
