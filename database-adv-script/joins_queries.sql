@@ -11,7 +11,8 @@ SELECT p.property_id, p.host_id, p."name", p.description, p."location", p.create
        r.rating, r."comment" 
 FROM "Property" p 
 LEFT JOIN "Review" r 
-ON p.property_id = r.property_id;
+ON p.property_id = r.property_id
+ORDER BY p."name";
 
 
 -- A query to retrieve all users and all bookings, even if the user has no booking or a booking is not linked to a user.
