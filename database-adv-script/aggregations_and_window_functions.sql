@@ -12,7 +12,8 @@ ORDER BY total_bookings DESC;
 -- A query to rank properties based on the total number of bookings they have received
 SELECT p.property_id, p."name" AS property_name, 
 	   COUNT(b.booking_id) AS total_bookings,
-	   ROW_NUMBER() OVER (ORDER BY COUNT(b.booking_id) DESC) AS row_number 
+	   ROW_NUMBER() OVER (ORDER BY COUNT(b.booking_id) DESC) AS row_number,
+	   RANK() OVER (ORDER BY COUNT(b.booking_id) DESC) AS rank
 FROM "Property" p 
 LEFT JOIN "Booking" b 
 ON p.property_id = b.property_id 
