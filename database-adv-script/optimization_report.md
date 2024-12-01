@@ -23,7 +23,7 @@ LEFT JOIN "Payment" pay ON b.booking_id = pay.booking_id;
 ```
 
 ### Performance Before Optimization:
-- **Execution Time Before**: `0.925 ms`
+- **Execution Time Before**: `0.966 ms`
 
 ---
 
@@ -64,19 +64,22 @@ FROM "Booking" b
 INNER JOIN "User" u ON b.user_id = u.user_id
 INNER JOIN "Property" p ON b.property_id = p.property_id
 LEFT JOIN "Payment" pay ON b.booking_id = pay.booking_id
-WHERE b.status = 'confirmed';
+WHERE b.status = 'confirmed'
+AND p.pricepernight > 100
+AND u.email LIKE '%@example.com';
 ```
 
 ### Key Changes:
 - **Indexes added** for columns involved in `JOIN` and `WHERE` clauses.
-- **Filtering by status** (`b.status = 'confirmed'`) to reduce the data processed.
+- **Filtering by status** (`b.status = 'confirmed'`, `AND p.pricepernight > 100` and `
+AND u.email LIKE '%@example.com'`) to reduce the data processed.
 
 ---
 
 ## Performance After Optimization:
 
 ### Query Execution Time After Optimization:
-- **Execution Time After**: `0.420 ms`
+- **Execution Time After**: `0.549 ms`
 
 ---
 
@@ -84,11 +87,11 @@ WHERE b.status = 'confirmed';
 
 | **Metric**                | **Before Optimization** | **After Optimization** |
 |---------------------------|-------------------------|------------------------|
-| Execution Time            | 0.925 ms                | 0.420 ms               |
-| Execution Time Improvement | N/A                     | **54.05% reduction**    |
+| Execution Time            | 0.966 ms                | 0.549 ms               |
+| Execution Time Improvement | N/A                     | **43.16% reduction**    |
 
 ### Observations:
-- **Execution time reduction**: The optimized query has improved execution time by **54.05%**, reducing it from **0.925 ms** to **0.420 ms**.
+- **Execution time reduction**: The optimized query has improved execution time by **43.16%**, reducing it from **0.966 ms** to **0.549 ms**.
 - **Efficient Index Usage**: Proper indexing on frequently joined and filtered columns significantly improved the query performance.
 - **Data Minimization**: By selecting only applying filters (`WHERE b.status = 'confirmed'`), the query processes fewer rows, improving speed.
 
